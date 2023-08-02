@@ -1,5 +1,21 @@
 .header {
   display: flex;
+  gap: 10px;
   flex-direction: column;
   align-items: center;
+}
+
+.note-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.note {
+  width: 200px;
+  height: 200px;
+  background-color: rgb(255, 217, 0);
+  margin: 0 auto;
+  list-style-type: none;
 }
