@@ -1,19 +1,10 @@
-import { useState, useReducer } from "react";
+import { useState, useReducer, useCallback, useEffect } from "react";
 
 function notesReducer(state, action) {
   switch (action.type) {
     case "ADD": {
       return [...state, action.payload];
     }
-    // case "CHANGE": {
-    //   return state.map((note) => {
-    //     if (note === action.state) {
-    //       return action.state;
-    //     } else {
-    //       return note;
-    //     }
-    //   });
-    // }
     case "DELETE": {
       return state.filter((note) => note.id !== action.payload);
     }
@@ -36,30 +27,85 @@ const Note = () => {
     setDescription(event.target.value);
   };
 
-  const formHandler = (event) => {
+  const formHandler = async (event) => {
     event.preventDefault();
 
-    const newNote = { id: Math.random(), title, description };
-    dispatch({
-      type: "ADD",
-      payload: newNote,
-    });
-    setTitle("");
-    setDescription("");
+    const newNote = {
+      id: Math.random().toString(),
+      title: title,
+      description: description,
+    };
+
+    try {
+      await addNotesHandler(newNote);
+      dispatch({
+        type: "ADD",
+        payload: newNote,
+      });
+      setTitle("");
+      setDescription("");
+    } catch (error) {
+      console.error("Error saving note to Firebase:", error);
+    }
   };
 
-  function handleDeleteNotes(id) {
-    dispatch({
-      type: "DELETE",
-      payload: id,
-    });
+  async function handleDeleteNotes(id) {
+    try {
+      await fetch(
+        `https://note-app-9cd1c-default-rtdb.europe-west1.firebasedatabase.app/notes/${id}.json`,
+        {
+          method: "DELETE",
+        }
+      );
+      dispatch({
+        type: "DELETE",
+        payload: id,
+      });
+    } catch (error) {
+      console.error("Something went wrong", error);
+    }
   }
-  function handleChangeNotes() {
-    dispatch({
-      type: "CHANGE",
-      newDescription: description,
-    });
+
+  const fetchNotesHandler = useCallback(async () => {
+    try {
+      const response = await fetch(
+        "https://note-app-9cd1c-default-rtdb.europe-west1.firebasedatabase.app/notes.json"
+      );
+      if (!response.ok) {
+        throw new Error("Something went wrong! Please try again");
+      }
+      const data = await response.json();
+      const loadedNotes = [];
+
+      for (const key in data) {
+        loadedNotes.push({
+          id: key,
+          title: data[key].title,
+          description: data[key].description,
+        });
+      }
+    } catch (error) {
+      console.error("Error saving note to Firebase:", error);
+    }
+  }, []);
+
+  async function addNotesHandler(note) {
+    const response = await fetch(
+      "https://note-app-9cd1c-default-rtdb.europe-west1.firebasedatabase.app/notes.json",
+      {
+        method: "POST",
+        body: JSON.stringify(note),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
   }
+  useEffect(() => {
+    fetchNotesHandler();
+  }, [fetchNotesHandler]);
 
   return (
     <div>
@@ -91,13 +137,9 @@ const Note = () => {
             <button onClick={() => handleDeleteNotes(note.id)}>
               Delete note
             </button>
-            <button onClick={() => handleChangeNotes(note.id)}>
-              Check note
-            </button>
           </div>
         ))}
       </div>
-      <h1>History</h1>
     </div>
   );
 };
