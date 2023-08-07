@@ -1,4 +1,3 @@
-import "./NoteForm.css";
 import { useState } from "react";
 import { nanoid } from "nanoid";
 import { useForm } from "react-hook-form";
@@ -33,9 +32,12 @@ const NoteForm = ({ addNoteHandler }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(formHandler)} className="header">
-      <h1>Note App</h1>
+    <form
+      onSubmit={handleSubmit(formHandler)}
+      className="flex flex-col justify-center shrink-0 bg-primary w-96 h-72 mx-auto mt-7 rounded-3xl shadow-xl text-2xl font-space-grotesk"
+    >
       <input
+        className="rounded-3xl mb-12 ml-5 pl-10 w-80 h-14 bg-input placeholder:text-button"
         {...register("title", { required: true, minLength: 1, maxLength: 10 })}
         aria-invalid={errors.title ? "true" : "false"}
         onChange={titleChangeHandler}
@@ -46,6 +48,7 @@ const NoteForm = ({ addNoteHandler }) => {
         <p role="alert">Title is required</p>
       )}
       <input
+        className="rounded-3xl mb-12 ml-5 pl-10 w-80 h-14 bg-input placeholder:text-button"
         {...register("description", {
           required: true,
           minLength: 1,
@@ -59,7 +62,9 @@ const NoteForm = ({ addNoteHandler }) => {
       {errors.description?.type === "required" && (
         <p role="alert">Description is required</p>
       )}
-      <button>Add Note</button>
+      <button className="w-28 h-12 mx-auto mr-4 rounded-3xl bg-button text-white">
+        Add
+      </button>
     </form>
   );
 };
